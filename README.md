@@ -1,0 +1,1 @@
+Proof of concept service which, given an image, generates an image description
