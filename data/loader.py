@@ -23,21 +23,3 @@ def load_ds(ds_name: str):
         ds_path.mkdir(parents=True)
         ds.save_to_disk(ds_path)
     return ds
-
-
-
-def unpack_dataset(ds_name: str):
-    """
-    Load a dataset from disk or from the Hugging Face Hub. Transforms it into human-readable format,
-    images and captions
-    
-    """
-   
-    ds_path =  Path(__file__).parent / ds_name
-    try:
-        ds = datasets.load_from_disk(ds_path)
-    except FileNotFoundError:
-        ds = datasets.load_dataset(ds_name)
-        ds_path.mkdir(parents=True)
-        ds.save_to_disk(ds_path)
-    return ds
