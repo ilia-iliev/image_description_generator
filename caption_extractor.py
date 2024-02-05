@@ -1,8 +1,4 @@
-from transformers import pipeline, AutoProcessor, Trainer
-from data.loader import load_ds
-from evaluation import compute_metrics
-
-DS_NAME = "lambdalabs/pokemon-blip-captions"
+from transformers import pipeline
 
 model_shortener = {"blip":"Salesforce/blip-image-captioning-base",
                     "git": "microsoft/git-base"}
@@ -28,18 +24,11 @@ class CachedPipeline:
     
     @classmethod
     def get(cls, expected_model_name):
-        if cls._cache is None or cls._cache.model.name_or_path != expected_model_name:
+        full_name = model_shortener.get(expected_model_name)
+        if cls._cache is None or cls._cache.model.name_or_path != full_name:
             # loads pipeline that does all the wrangling around image-to-text transformation
-            pip = pipeline("image-to-text", expected_model_name)
+            pip = pipeline("image-to-text", full_name)
             pip.postprocess = one_sample_postprocess.__get__(pip, pipeline) # monkey-patch the pipeline for cleaner output
             cls._cache = pip
 
         return cls._cache
-    
-if __name__ == '__main__':
-    pipeline = model_shortener.get("blip")
-    ds = load_ds(DS_NAME)
-    ds = ds["train"].train_test_split(test_size=3)
-    preds = pipeline(ds['test']['image'])
-
-    #wer.compute(predictions=[x[0]['generated_text'] for x in preds], references=ds['train']['text'])
