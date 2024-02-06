@@ -6,7 +6,6 @@ from evaluation import evaluate_on_data
 
 
 app = FastAPI()
-model = None
 
 @app.get("/")
 def read_root():
@@ -16,10 +15,6 @@ def read_root():
 def create_upload_image(image: UploadFile, reference_caption: str):
     #TODO: check that it's an image, check size is up to 1024x1024
     return {"filename": image.filename}
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
 
 @app.get("/evaluate/{model}")
 async def evaluate(model: str):
