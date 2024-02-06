@@ -21,3 +21,4 @@ Next Steps:
 2. Often the prompts used for generation do not describe the image and objects in it correctly. Why? What use case are we trying to solve?
 3. Mixture-of-experts models
 4. Return server is busy when doing expensive operations
+5. Add dataset to huggingface
