@@ -1,7 +1,7 @@
 from typing import Union
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, HTTPException
 from PIL import Image
-from caption_extractor import CachedPipeline
+from caption_extractor import CachedPipeline, UnsupportedModelException
 from evaluation import evaluate_on_data
 
 
@@ -23,12 +23,18 @@ def read_item(item_id: int, q: Union[str, None] = None):
 
 @app.get("/evaluate/{model}")
 async def evaluate(model: str):
-    pipeline = CachedPipeline.get(model)
-    return evaluate_on_data(pipeline)
+    try:
+        pipeline = CachedPipeline.get(model)
+        return evaluate_on_data(pipeline)
+    except UnsupportedModelException as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @app.post("/image2caption/{model}")
 async def image2caption(image: UploadFile, model: str):
-    pipeline = CachedPipeline.get(model)
-    converted_image = Image.open(image.file)
-    return {"caption": pipeline(converted_image)}
+    try:
+        pipeline = CachedPipeline.get(model)
+        converted_image = Image.open(image.file)
+        return {"caption": pipeline(converted_image)}
+    except UnsupportedModelException as e:
+        raise HTTPException(status_code=404, detail=str(e))
