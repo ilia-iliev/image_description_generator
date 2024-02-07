@@ -1,4 +1,3 @@
-from typing import Union
 from fastapi import FastAPI, UploadFile, HTTPException
 from PIL import Image
 from caption_extractor import CachedPipeline, UnsupportedModelException

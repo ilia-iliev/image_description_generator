@@ -15,7 +15,7 @@ class EvalMetrics(BaseModel):
     rougeLsum: float
     avg_inference: float
 
-    @validator('*', pre=True)
+    @validator('*')
     def round_float(cls, v):
         if isinstance(v, float):
             return round(v, 3)
@@ -28,12 +28,12 @@ def evaluate_metrics(preds, references):
     return res
 
 
-def evaluate_on_data(model):
-    ds = load_dataset("data/ilia_captioner")
+def evaluate_on_data(model) -> EvalMetrics:
+    ds = load_dataset("Ilia-Iliev/example_captioner")
 
     start = time.time()
     preds=model(ds['validation']['image'])
-    avg_inference = (time.time()-start) / len(ds)
+    avg_inference = (time.time()-start) / len(preds)
 
     evaluation_metrics = evaluate_metrics(preds, ds['validation']['text'])
     evaluation_metrics['avg_inference'] = avg_inference

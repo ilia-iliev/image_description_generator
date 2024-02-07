@@ -4,9 +4,7 @@ from transformers.pipelines import ImageToTextPipeline
 model_mapper = {"blip-base":"Salesforce/blip-image-captioning-base",
                 "blip-large":"Salesforce/blip-image-captioning-large",
                 "git-base": "microsoft/git-base",
-                "git-large": "microsoft/git-large-coco",
-                "blip2": "Salesforce/blip2-opt-2.7b",
-                "vit": "nlpconnect/vit-gpt2-image-captioning"}
+                "git-large": "microsoft/git-large-coco"}
 
 generate_kwargs = {"min_length": 32,
                    "max_length": 64,
@@ -14,8 +12,9 @@ generate_kwargs = {"min_length": 32,
 
 
 def one_sample_postprocess(self, model_outputs) -> str:
-        # Postprocessing function for ImageToTextPipeline on per-sample basis. Batch support is removed in favour of
-        # string output
+        """
+        Postprocessing function for ImageToTextPipeline on per-sample basis. Batch inference is no longer supported but output
+        is a single string instead of list of strings. This is okay since this batch inference is not expected"""
         return self.tokenizer.decode(model_outputs.squeeze(0), skip_special_tokens=True)
 
 
@@ -24,23 +23,50 @@ class UnsupportedModelException(Exception):
 
 
 class ModifiedPipeline:
-      def __init__(self, model_name: str):
-            try:
-                 full_name = model_mapper[model_name]
-            except KeyError:
-                raise UnsupportedModelException(f'Not supported model {model_name}, please choose from {model_mapper.keys()}')
-            self.model_name = model_name
-            pip = pipeline("image-to-text", full_name)
-            pip.postprocess = one_sample_postprocess.__get__(pip, pipeline) # monkey-patch the pipeline for cleaner output
-            self.image2text_pipeline: ImageToTextPipeline = pip
+    """
+    A wrapper around the ImageToTextPipeline from the Hugging Face Transformers library.
+    Provides a modified version of the pipeline with additional functionalities for image-to-text transformation.
+    """
 
-      def __call__(self, *args, **kwargs):
-            if 'generate_kwargs' not in kwargs:
-                kwargs['generate_kwargs'] = generate_kwargs
-            return self.image2text_pipeline(*args, **kwargs)
-      
-      def postprocess(self, model_outputs):
-            return self.tokenizer.decode(model_outputs.squeeze(0), skip_special_tokens=True)
+    def __init__(self, model_name: str):
+        """
+        Initializes an instance of the ModifiedPipeline class with the specified model name.
+
+        Args:
+            model_name (str): The name of the model to use for image-to-text transformation.
+
+        Raises:
+            UnsupportedModelException: If the specified model name is not supported.
+        """
+        self.model_name = model_name
+        self.image2text_pipeline = self._get_pipeline(model_name)
+
+    def __call__(self, *args, **kwargs):
+        """
+        Provides a callable interface to the pipeline. Accepts image paths or PIL images as input and returns the generated captions.
+        """
+        if 'generate_kwargs' not in kwargs:
+            kwargs['generate_kwargs'] = generate_kwargs
+        return self.image2text_pipeline(*args, **kwargs)
+
+    @staticmethod
+    def _get_pipeline(model_name: str) -> ImageToTextPipeline:
+        """
+        Gets the ImageToTextPipeline for the specified model name.
+
+        Args:
+            model_name (str): The name of the model.
+
+        Returns:
+            ImageToTextPipeline: The ImageToTextPipeline object.
+        """
+        try:
+            full_name = model_mapper[model_name]
+        except KeyError:
+            raise UnsupportedModelException(f'Not supported model {model_name}, please choose from {model_mapper.keys()}')
+        pip = pipeline("image-to-text", full_name)
+        pip.postprocess = one_sample_postprocess.__get__(pip, pipeline)  # monkey-patch the pipeline for cleaner output
+        return pip
 
 
 class CachedPipeline:
@@ -59,7 +85,5 @@ class CachedPipeline:
     def get(cls, expected_model_name):
         if cls._cache is None or cls._cache.model_name != expected_model_name:
             modified = ModifiedPipeline(expected_model_name)
-            # pip.postprocess = one_sample_postprocess.__get__(pip, pipeline) # monkey-patch the pipeline for cleaner output
             cls._cache = modified
-
         return cls._cache
