@@ -1,4 +1,4 @@
-Proof of concept service which, given an image, generates an image description. To run, make sure all requirements are installed. Start a server using:
+Proof of concept service which, given an image, generates an image description. To run, make sure all requirements in `requirements.txt` are installed. Start a server using:
 
 ```
 uvicorn main:app --reload
