@@ -16,7 +16,7 @@ curl -X 'POST' \
 To trigger an evaluation pipeline, call the server:
 
 ```
-curl http://localhost:8000/image2caption/blip-base
+curl http://localhost:8000/evaluate/blip-base
 ```
 
 
@@ -36,7 +36,7 @@ Next Steps:
 - Implement a server queue for expensive operations
 - Add some safety guards to server. I.e. - don't allow users to trigger model evaluation or downloading models from HuggingFace. Alternatively, those could be manually triggered instead through the API.
 - The service could be integrated with something like MLFlow for easier experiment result tracking
-- Some unit tests and assertions are always a good idea
+- Some unit tests and assertions are always a good idea. Could be auto-generated using something like Codium, but I decided that unit tests for PoC would be confusing. However, if the codebase grows, those would be very welcome.
 
 
 
@@ -48,7 +48,7 @@ Things tried that did not give satisfactory results:
 
 
 Additional Notes:
-- All experiments were run on an old machine with Intel i7-6500U CPU @ 2.50GHz and 8 GB RAM, without CUDA support
+- All experiments were run on an old machine with Intel i7-6500U CPU @ 2.50GHz and 8 GB RAM, without CUDA support and Python3.10
 
 Here is table of metrics on the validation set, albeit only 5 images:
 | | WER| ROUGE-1 | ROUGE-2 | ROUGE-L | ROUGE-L-SUM | AVG INFERENCE TIME|

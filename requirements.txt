@@ -3,9 +3,12 @@ datasets==2.16.1
 fastapi==0.109.0
 evaluate==0.4.1
 jiwer==3.0.3
+python-multipart==0.0.6
 pydantic==2.6.0
 rouge_score==0.1.2
+-f https://download.pytorch.org/whl/torch_stable.html 
 torch==2.2.0+cpu
+-f https://download.pytorch.org/whl/torch_stable.html 
 torchvision==0.17.0+cpu
 starlette==0.35.1
 transformers==4.37.2
