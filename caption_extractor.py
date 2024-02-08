@@ -6,6 +6,8 @@ model_mapper = {"blip-base":"Salesforce/blip-image-captioning-base",
                 "git-base": "microsoft/git-base",
                 "git-large": "microsoft/git-large-coco"}
 
+# arguments that will be passed to generation phase of the pipeline. Currently, those force the model to
+# provide longer captions which seems to make it more descriptive
 generate_kwargs = {"min_length": 32,
                    "max_length": 64,
                    "repetition_penalty":1.5}
@@ -14,7 +16,7 @@ generate_kwargs = {"min_length": 32,
 def one_sample_postprocess(self, model_outputs) -> str:
         """
         Postprocessing function for ImageToTextPipeline on per-sample basis. Batch inference is no longer supported but output
-        is a single string instead of list of strings. This is okay since this batch inference is not expected"""
+        is a single string instead of list of strings. This is okay since this batch inference is not expected for this PoC"""
         return self.tokenizer.decode(model_outputs.squeeze(0), skip_special_tokens=True)
 
 
@@ -58,7 +60,7 @@ class ModifiedPipeline:
             model_name (str): The name of the model.
 
         Returns:
-            ImageToTextPipeline: The ImageToTextPipeline object.
+            ImageToTextPipeline
         """
         try:
             full_name = model_mapper[model_name]
